@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+{% block main %}
+<div class="text-center py-5">
+    <span class="badge bg-secondary mb-3">⚡ RESEARCH ENGINE</span>
+
+    {% if session.user_id %}
+        <h1 class="display-4 fw-bold"> ⚡ Welcome Back, {{ session.username }}</h1>
+        <p class="lead">Add paper,take notes & organize.</p>
+    {% else %}
+        <h1 class="display-4 fw-bold">READ. CAPTURE. ENGINEER.</h1>
+        <p class="lead">Stop Drowning in PDFs</p>
+    {% endif %}
+
+    <p class="text-muted">
+        My ScholarLibrary is a research workspace built to capture key takeaways,
+        structure literature notes, and organize your paper insights instantly.
+    </p>
+
+    {% if session.user_id %}
+        <a href="/dashboard" class="btn btn-primary btn-lg mt-3">Go to Dashboard</a>
+    {% else %}
+        <a href="/register" class="btn btn-primary btn-lg mt-3">Start Researching</a>
+    {% endif %}
+</div>
+ <div class="text-center mt-5 mb-3">
+        <h2>📄 Workflow</h2>
+
+    </div>
+<div class="row text-center mt-5">
+    <div class="col-md-4">
+        <div class="feature-card">
+        <h5>01 - Save Paper</h5>
+        <p class="text-muted">Add any paper title,authors & PDF link to your library.</p>
+        </div>
+
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card">
+        <h5>02 - Add TL;DR & Notes</h5>
+        <p class="text-muted">Write your one-sentence takeaway & personal research notes for quick future synthesis.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card">
+        <h5>03 - Tag & Organize</h5>
+        <p class="text-muted">Categorize by tools,methodology & reading status.</p>
+        </div>
+    </div>
+    </div>
+    <div class="text-center mt-5 mb-3">
+        <h2>Why My ScholarLibrary?</h2>
+
+    </div>
+    <div class="row text-center mb-5">
+        <div class="col-md-4">
+            <div class="feature-card">
+            <h5>💾 SQL Database Recall</h5>
+            <p class="text-muted">Powerful local indexing for instant retrieval of any stored insight.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+            <h5>📝 Personal Notes</h5>
+            <p class="text-muted">Your thought space.Connect ideas across different publications effortlessly.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+            <h5>🏷️ Actionable Badges</h5>
+            <p class="text-muted">Tag papers by methodology,datasets and 'To Cite' status.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

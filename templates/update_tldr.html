@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block main %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h2>Update TL;DR</h2>
+    <h5 class="text-muted mb-4">{{paper.title}}</h5>
+    <form action="/update_tldr/{{paper.id}}" method="post">
+        <div class="mb-3">
+            <label class="form-label">TL;DR (One-sentence takeaway)</label>
+            <input type="text" name="tldr" class="form-control" value="{{paper.tldr or ''}}" required>
+
+        </div>
+        <button type="submit" class="btn btn-warning">Update</button>
+        <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

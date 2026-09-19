@@ -1,0 +1,24 @@
+{% extends"layout.html" %}
+{% block main %}
+<h2 class="mb-1">{{paper.title}}</h2>
+<p class="text-muted mb-4">Add tags to this paper.</p>
+<div class="mb-4">
+    <strong>Current tags:</strong><br>
+    {% if current_tags %}
+      {% for tag in current_tags %}
+          <span class="badge bg-secondary me-1">#{{tag.nname}}</span>
+      {% endfor %}
+    {% else %}
+      <span class="text-muted">No tags yet.</span>
+    {% endif %}
+</div>
+<form action="/add_tags/{{paper.id}}" method="post">
+  <div class="mb-3">
+    <label class="form-label">Add tags (comma-seperated)</label>
+    <input type="text" name="tags" class="form-control">
+
+  </div>
+  <button type="submit" class="btn btn-primary">Save Tags</button>
+</form>
+<a href="/dashboard" class="btn btn-outline-secondar mt-4">Back to Dashboard</a>
+{% endblock %}

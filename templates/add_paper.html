@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block main %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Add New Paper</h2>
+        <form action="/add_paper" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+             <div class="mb-3">
+                <label class="form-label">Authors</label>
+                <input type="text" name="authors" class="form-control" required>
+            </div>
+             <div class="mb-3">
+                <label class="form-label">Year</label>
+                <input type="number" name="year" class="form-control" required>
+            </div>
+             <div class="mb-3">
+                <label class="form-label">PDF File</label>
+                <input type="file" name="pdf" accept=".pdf" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">TL;DR (one-sentence takeaway)</label>
+                <input type="text" name="tldr" class="form-control" placeholder="e.g. Demonstrates 95% accuracy using CNN models">
+            </div>
+            <div class="mb-3">
+
+                <label class="form-label">Tags</label>
+                <input type="text" name="tags" class="form-control" placeholder="Cybersecurity,NeuralNetworks,ArtıfıcalIntelligence,MachineLearning,NLP,LLM,ComputerScıence,Algorithms,DataStructures,DatabaseSystem,IoT,Robotics,ControlSystems,AcademicResearch,LiteratureReview,ElectricalEngineering,EmbeddedSystems,DataScience,BiomedicalEngineering,AerospaceEngineering,SatelliteSystems,Astrophysics,MetaAnalysis,Interdisciplinary">
+
+            </div>
+            <button type="submit" class="btn btn-primary">Save Paper</button>
+            <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

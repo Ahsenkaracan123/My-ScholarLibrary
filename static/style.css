@@ -1,0 +1,83 @@
+:root {
+    --bg-dark: #0f0f1a;
+    --bg-card: #1a1a2e;
+    --accent-purple: #8b5cf6;
+    --accent-purple-light: #a78bfa;
+    --text-light: #e5e5f0;
+    --text-muted: #9999b0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+}
+
+.navbar {
+    background-color: var(--bg-card) !important;
+    border-bottom: 1px solid #2a2a40;
+}
+
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid #2a2a40;
+    color: var(--text-light);
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.btn-primary {
+    background-color: var(--accent-purple);
+    border-color: var(--accent-purple);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-purple-light);
+    border-color: var(--accent-purple-light);
+}
+
+.btn-outline-light:hover {
+    color: var(--bg-dark);
+}
+
+.badge.bg-secondary {
+    background-color: var(--accent-purple) !important;
+}
+
+.form-control {
+    background-color: var(--bg-card);
+    border: 1px solid #2a2a40;
+    color: var(--text-light);
+}
+
+.form-control:focus {
+    background-color: var(--bg-card);
+    color: var(--text-light);
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.25);
+}
+
+.form-label {
+    color: var(--text-light);
+}
+
+a {
+    color: var(--accent-purple-light);
+}
+
+.feature-card {
+  background: rgba(22, 14, 41, 0.8) !important;
+  border: 1px solid #6b21a8 !important;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 15px rgba(147, 51, 234, 0.15);
+}
+
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  border-color: #c084fc !important;
+  box-shadow: 0 0 25px rgba(192, 132, 252, 0.4); 
+}
