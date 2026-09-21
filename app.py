@@ -139,14 +139,14 @@ def add_paper():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
             pdf_path=filename
 
-        result = db.execute("INSERT INTO papers (user_id, title, authors, year, status, tldr, tags, pdf_path) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id", session["user_id"], title, authors, year, status, tldr, tags, pdf_path)
-        paper_id = result[0]["id"]
+        paper_id = db.execute("INSERT INTO papers (user_id, title, authors, year, status, tldr, tags, pdf_path) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id", session["user_id"], title, authors, year, status, tldr, tags, pdf_path)
+        
         if tags:
            tag_list=[t.strip() for t in tags.split(",") if t.strip()]
            for tag_name in tag_list:
                 existing=db.execute("SELECT id FROM tags WHERE name=%s",tag_name)
                 if len(existing)==0:
-                   tag_id = db.execute("INSERT INTO tags (name) VALUES (%s) RETURNING id", tag_name)[0]["id"]
+                   tag_id = db.execute("INSERT INTO tags (name) VALUES (%s) ", tag_name)
                 else:
                   tag_id=existing[0]["id"]
                 db.execute("INSERT INTO paper_tags (paper_id,tag_id) VALUES(%s,%s)",paper_id,tag_id)
@@ -166,7 +166,7 @@ def add_tags(paper_id):
             for tag_name in tag_list:
                 existing=db.execute("SELECT id FROM tags WHERE name=%s",tag_name)
                 if len(existing)==0:
-                    tag_id = db.execute("INSERT INTO tags (name) VALUES (%s) RETURNING id", tag_name)[0]["id"]
+                    tag_id = db.execute("INSERT INTO tags (name) VALUES (%s) ", tag_name)
                 else:
                     tag_id=existing[0]["id"]
                 already_linked=db.execute("SELECT * FROM paper_tags WHERE paper_id=%s AND tag_id=%s",paper_id,tag_id)
