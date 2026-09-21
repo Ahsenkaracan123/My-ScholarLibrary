@@ -3,3 +3,4 @@ Flask-Session
 cs50
 python-dotenv
 gunicorn
+psycopg2-binary
