@@ -55,6 +55,36 @@ db.execute("""
         FOREIGN KEY (paper_id) REFERENCES papers(id)
     )
 """)
+db.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        hash TEXT NOT NULL
+    )
+""")
+
+db.execute("""
+    CREATE TABLE IF NOT EXISTS papers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        author TEXT,
+        status TEXT DEFAULT 'Reading',
+        pdf_path TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+""")
+
+db.execute("""
+    CREATE TABLE IF NOT EXISTS notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        paper_id INTEGER NOT NULL,
+        content TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (paper_id) REFERENCES papers(id)
+    )
+""")
 @app.route("/")
 def index():
 
