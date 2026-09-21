@@ -187,7 +187,7 @@ def update_tldr(paper_id):
        tldr=request.form.get("tldr")
        if not tldr or not tldr.strip():
            return "TL;DR cannot be empty",400
-       db.execute("UPDATE papers SET tldr=? WHERE id=%s AND user_id=%s",tldr.strip(),paper_id,session["user_id"])
+       db.execute("UPDATE papers SET tldr=%s WHERE id=%s AND user_id=%s",tldr.strip(),paper_id,session["user_id"])
        return redirect("/dashboard")
     return render_template("update_tldr.html",paper=paper[0])
 
