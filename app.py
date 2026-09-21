@@ -169,7 +169,7 @@ def add_tags(paper_id):
                     tag_id = db.execute("INSERT INTO tags (name) VALUES (%s) RETURNING id", tag_name)[0]["id"]
                 else:
                     tag_id=existing[0]["id"]
-                already_linked=db.execute("SELECT * FROM paper_tags WHERE paper_id=?%s AND tag_id=%s",paper_id,tag_id)
+                already_linked=db.execute("SELECT * FROM paper_tags WHERE paper_id=%s AND tag_id=%s",paper_id,tag_id)
                 if len(already_linked)==0:
                     db.execute("INSERT INTO paper_tags(paper_id,tag_id) VALUES(%s,%s)",paper_id,tag_id)
         return redirect("/dashboard")
@@ -187,7 +187,7 @@ def update_tldr(paper_id):
        tldr=request.form.get("tldr")
        if not tldr or not tldr.strip():
            return "TL;DR cannot be empty",400
-       db.execute("UPDATE papers SET tldr=? WHERE id=? AND user_id=?",tldr.strip(),paper_id,session["user_id"])
+       db.execute("UPDATE papers SET tldr=? WHERE id=%s AND user_id=%s",tldr.strip(),paper_id,session["user_id"])
        return redirect("/dashboard")
     return render_template("update_tldr.html",paper=paper[0])
 
