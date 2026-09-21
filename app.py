@@ -24,7 +24,16 @@ app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
 app.config["SESSION_PERMANENT"]=False
 app.config["SESSION_TYPE"]="filesystem"
 Session(app)
-db=SQL("sqlite:///scholarlibrary.db")
+import os
+
+
+db_url = os.environ.get("DATABASE_URL", "sqlite:///scholarlibrary.db")
+
+
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+db = SQL(db_url)
 db.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
