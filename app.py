@@ -110,7 +110,7 @@ def register():
         if len(password)<8:
             return " Your password must be 8 character at least"
         hash=generate_password_hash(password)
-        db.execute("INSERT INTO users(username,hash) VALUES(?,?)",username,hash)
+        db.execute("INSERT INTO users(username,hash) VALUES(%s,%s)",username,hash)
         return redirect("/login")
     else:
         return render_template("register.html")
@@ -122,7 +122,7 @@ def login():
         password=request.form.get("password")
         if not username or not password:
             return" Need username and password"
-        rows=db.execute("SELECT * FROM users WHERE username=?",username)
+        rows=db.execute("SELECT * FROM users WHERE username=%s",username)
         if len(rows)!=1 or not check_password_hash(rows[0]["hash"],password):
             return" Invalid Username or Password"
         session["user_id"]=rows[0]["id"]
@@ -140,23 +140,23 @@ def dashboard():
     user_id = session["user_id"]
 
 
-    papers_count = db.execute("SELECT COUNT(*) as count FROM papers WHERE user_id = ?", user_id)
+    papers_count = db.execute("SELECT COUNT(*) as count FROM papers WHERE user_id = %s", user_id)
     total_papers = papers_count[0]["count"] if papers_count else 0
 
-    completed_count = db.execute("SELECT COUNT(*) as count FROM papers WHERE user_id = ? AND LOWER(status) = 'completed'", user_id)
+    completed_count = db.execute("SELECT COUNT(*) as count FROM papers WHERE user_id = %s AND LOWER(status) = 'completed'", user_id)
     completed = completed_count[0]["count"] if completed_count else 0
 
-    notes_count = db.execute("SELECT COUNT(*) as count FROM notes WHERE paper_id IN (SELECT id FROM papers WHERE user_id = ?)", user_id)
+    notes_count = db.execute("SELECT COUNT(*) as count FROM notes WHERE paper_id IN (SELECT id FROM papers WHERE user_id = %s)", user_id)
     total_notes = notes_count[0]["count"] if notes_count else 0
 
 
-    papers = db.execute("SELECT * FROM papers WHERE user_id = ?", user_id)
+    papers = db.execute("SELECT * FROM papers WHERE user_id = %s", user_id)
     for paper in papers:
-        paper_tags=db.execute(""" SELECT tags.name FROM tags JOIN paper_tags ON tags.id=paper_tags.tag_id WHERE paper_tags.paper_id=?""",paper["id"])
+        paper_tags=db.execute(""" SELECT tags.name FROM tags JOIN paper_tags ON tags.id=paper_tags.tag_id WHERE paper_tags.paper_id=%s""",paper["id"])
         paper["tag_list"]=[t["name"] for t in paper_tags]
     for paper in papers:
 
-        paper["notes"] = db.execute("SELECT * FROM notes WHERE paper_id = ? ORDER BY id DESC", paper["id"])
+        paper["notes"] = db.execute("SELECT * FROM notes WHERE paper_id = %s ORDER BY id DESC", paper["id"])
 
     return render_template("dashboard.html",
                         papers=papers,
@@ -168,7 +168,7 @@ def dashboard():
 @app.route("/update_status/<int:paper_id>", methods=["POST", "GET"])
 @login_required
 def update_status(paper_id):
-    paper = db.execute("SELECT * FROM papers WHERE id = ? AND user_id = ?", paper_id, session["user_id"])
+    paper = db.execute("SELECT * FROM papers WHERE id = %s AND user_id = %s", paper_id, session["user_id"])
     if len(paper) != 1:
         return "Paper could not be found"
 
@@ -176,7 +176,7 @@ def update_status(paper_id):
     current_status = paper[0]["status"].lower() if paper[0]["status"] else "reading"
     new_status = "completed" if current_status == "reading" else "reading"
 
-    db.execute("UPDATE papers SET status = ? WHERE id = ?", new_status, paper_id)
+    db.execute("UPDATE papers SET status = %s WHERE id = %s", new_status, paper_id)
     return redirect("/dashboard")
 @app.route("/add_paper",methods=["GET","POST"])
 @login_required
@@ -198,25 +198,24 @@ def add_paper():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
             pdf_path=filename
 
-        db.execute("INSERT INTO papers(user_id,title,authors,year,status,tldr,tags,pdf_path) VALUES(?,?,?,?,?,?,?,?)",session["user_id"],title,authors,year,status,tldr,tags,pdf_path)
+        db.execute(db.execute("INSERT INTO papers (user_id, title, authors, year, status, tldr, tags, pdf_path) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",session["user_id"],title,authors,year,status,tldr,tags,pdf_path)
         paper_id=db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
         if tags:
            tag_list=[t.strip() for t in tags.split(",") if t.strip()]
            for tag_name in tag_list:
-                existing=db.execute("SELECT id FROM tags WHERE name=?",tag_name)
+                existing=db.execute("SELECT id FROM tags WHERE name=%s",tag_name)
                 if len(existing)==0:
-                   db.execute("INSERT INTO tags (name) VALUES (?)",tag_name)
-                   tag_id=db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
+                   tag_id = db.execute("INSERT INTO tags (name) VALUES (%s) RETURNING id", tag_name)[0]["id"]
                 else:
                   tag_id=existing[0]["id"]
-                db.execute("INSERT INTO paper_tags (paper_id,tag_id) VALUES(?,?)",paper_id,tag_id)
+                db.execute("INSERT INTO paper_tags (paper_id,tag_id) VALUES(%s,%s)",paper_id,tag_id)
 
         return redirect("/dashboard")
     return render_template("add_paper.html")
 @app.route("/add_tags/<int:paper_id>", methods=["GET","POST"])
 @login_required
 def add_tags(paper_id):
-    paper=db.execute("SELECT * FROM papers WHERE id=? AND user_id=?",paper_id,session["user_id"])
+    paper=db.execute("SELECT * FROM papers WHERE id=%s AND user_id=%s",paper_id,session["user_id"])
     if len(paper)!=1:
         return "Paper not found"
     if request.method=="POST":
@@ -224,23 +223,22 @@ def add_tags(paper_id):
         if tags:
             tag_list=[t.strip() for t in tags.split(",") if t.strip()]
             for tag_name in tag_list:
-                existing=db.execute("SELECT id FROM tags WHERE name=?",tag_name)
+                existing=db.execute("SELECT id FROM tags WHERE name=%s",tag_name)
                 if len(existing)==0:
-                    db.execute("INSERT INTO tags(name) VALUES(?)",tag_name)
-                    tag_id=db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
+                    tag_id = db.execute("INSERT INTO tags (name) VALUES (%s) RETURNING id", tag_name)[0]["id"]
                 else:
                     tag_id=existing[0]["id"]
-                already_linked=db.execute("SELECT * FROM paper_tags WHERE paper_id=? AND tag_id=?",paper_id,tag_id)
+                already_linked=db.execute("SELECT * FROM paper_tags WHERE paper_id=?%s AND tag_id=%s",paper_id,tag_id)
                 if len(already_linked)==0:
-                    db.execute("INSERT INTO paper_tags(paper_id,tag_id) VALUES(?,?)",paper_id,tag_id)
+                    db.execute("INSERT INTO paper_tags(paper_id,tag_id) VALUES(%s,%s)",paper_id,tag_id)
         return redirect("/dashboard")
-    current_tags=db.execute(""" SELECT tags.name FROM tags JOIN paper_tags ON tags.id=paper_tags.tag_id WHERE paper_tags.paper_id=?""",paper_id)
+    current_tags = db.execute("""SELECT tags.name FROM tags JOIN paper_tags ON tags.id=paper_tags.tag_id WHERE paper_tags.paper_id=%s""", paper_id)
 
     return render_template("add_tags.html",paper=paper[0],current_tags=current_tags)
 @app.route("/update_tldr/<int:paper_id>",methods=["GET","POST"])
 @login_required
 def update_tldr(paper_id):
-    paper=db.execute("SELECT * FROM papers WHERE id= ? AND user_id= ?",paper_id,session["user_id"])
+    paper=db.execute("SELECT * FROM papers WHERE id= %s AND user_id= %s",paper_id,session["user_id"])
     if len(paper)!=1:
        return "Paper not found",404
     if request.method=="POST":
@@ -256,7 +254,7 @@ def update_tldr(paper_id):
 @app.route("/add_note/<int:paper_id>",methods=["GET","POST"])
 @login_required
 def add_note(paper_id):
-    paper=db.execute("SELECT * FROM papers WHERE id=? AND user_id=?",paper_id,session["user_id"])
+    paper=db.execute("SELECT * FROM papers WHERE id=%s AND user_id=%s",paper_id,session["user_id"])
     if len(paper)!=1:
        return "paper couldn't find"
     if request.method=="POST":
@@ -265,8 +263,8 @@ def add_note(paper_id):
           return "Content cannot be empty"
        new_tldr=request.form.get("tldr")
        if new_tldr is not None:
-           db.execute("UPDATE papers SET tldr=? WHERE id=?",new_tldr,paper_id)
-       db.execute("INSERT INTO notes(paper_id,content) VALUES(?,?)",paper_id,content)
+           db.execute("UPDATE papers SET tldr=%s WHERE id=%s",new_tldr,paper_id)
+       db.execute("INSERT INTO notes(paper_id,content) VALUES(%s,%s)",paper_id,content)
        return redirect("/dashboard")
 
 @app.route("/pdf/<path:filename>")
@@ -276,41 +274,41 @@ def serve_pdf(filename):
 @app.route("/view_paper/<int:paper_id>",methods=["GET","POST"])
 @login_required
 def view_paper(paper_id):
-    paper=db.execute("SELECT * FROM papers WHERE id=? AND user_id=?",paper_id,session["user_id"])
+    paper=db.execute("SELECT * FROM papers WHERE id=%s AND user_id=%s",paper_id,session["user_id"])
     if len(paper)!=1:
         return "Paper not found",404
     if request.method=="POST":
         note_content=request.form.get("note_content")
         if note_content and note_content.strip():
-            db.execute("INSERT INTO notes(paper_id,content) VALUES(?,?)",paper_id,note_content.strip())
+            db.execute("INSERT INTO notes(paper_id,content) VALUES(%s,%s)",paper_id,note_content.strip())
         return redirect(f"/view_paper/{paper_id}")
-    notes=db.execute("SELECT * FROM notes WHERE paper_id=?  ORDER BY id DESC",paper_id)
+    notes=db.execute("SELECT * FROM notes WHERE paper_id=%s  ORDER BY id DESC",paper_id)
     return  render_template("view_paper.html",paper=paper[0],notes=notes)
 @app.route("/delete_note/<int:note_id>",methods=["POST"])
 @login_required
 def delete_note(note_id):
-    note=db.execute("SELECT paper_id FROM notes WHERE id=?",note_id)
+    note=db.execute("SELECT paper_id FROM notes WHERE id=%s",note_id)
     if note:
         paper_id=note[0]["paper_id"]
-        db.execute("DELETE FROM notes WHERE id=?",note_id)
+        db.execute("DELETE FROM notes WHERE id=%s",note_id)
         return redirect(f"/view_paper/{paper_id}")
     return redirect("/dashboard")
 @app.route("/edit_note/<int:note_id>",methods=["POST"])
 @login_required
 def edit_note(note_id):
     new_content=request.form.get("note_content")
-    note=db.execute("SELECT paper_id FROM notes WHERE id=?",note_id)
+    note=db.execute("SELECT paper_id FROM notes WHERE id=%s",note_id)
     if note and new_content:
         paper_id=note[0]["paper_id"]
-        db.execute("UPDATE notes SET content=? WHERE id=?",new_content,note_id)
+        db.execute("UPDATE notes SET content=%s WHERE id=%s",new_content,note_id)
         return redirect(f"/view_paper/{paper_id}")
     return redirect("/dashboard")
 @app.route("/delete_paper/<int:paper_id>",methods=["POST"])
 @login_required
 def delete_paper(paper_id):
-    db.execute("DELETE FROM paper_tags WHERE paper_id=?",paper_id)
-    db.execute("DELETE FROM notes WHERE paper_id=?",paper_id)
-    db.execute("DELETE FROM papers WHERE id=? AND user_id=?",paper_id,session["user_id"])
+    db.execute("DELETE FROM paper_tags WHERE paper_id=%s",paper_id)
+    db.execute("DELETE FROM notes WHERE paper_id=%s",paper_id)
+    db.execute("DELETE FROM papers WHERE id=%s AND user_id=%s",paper_id,session["user_id"])
     return redirect("/dashboard")
 @app.route("/edit_paper/<int:paper_id>",methods=["GET","POST"])
 @login_required
@@ -321,10 +319,10 @@ def edit_paper(paper_id):
         year=request.form.get("year")
         if not title:
             return render_template("error.html",message="Title is required")
-        db.execute("UPDATE papers SET title=?,authors=?,year=? WHERE id=? AND user_id=?",title,authors,year,paper_id,session["user_id"])
+        db.execute("UPDATE papers SET title=%s,authors=%s,year=%s WHERE id=%s AND user_id=%s",title,authors,year,paper_id,session["user_id"])
         return redirect("/dashboard")
     else:
-        papers=db.execute("SELECT * FROM papers WHERE id=? AND user_id=?",paper_id,session["user_id"])
+        papers=db.execute("SELECT * FROM papers WHERE id=? AND user_id=%s",paper_id,session["user_id"])
         if not papers:
             return redirect("/dashboard")
         return render_template("edit_paper.html",paper=papers[0])
