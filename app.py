@@ -207,6 +207,7 @@ def add_note(paper_id):
            db.execute("UPDATE papers SET tldr=%s WHERE id=%s",new_tldr,paper_id)
        db.execute("INSERT INTO notes(paper_id,content) VALUES(%s,%s)",paper_id,content)
        return redirect("/dashboard")
+    return render_template("add_note.html",paper=paper[0])   
 
 @app.route("/pdf/<path:filename>")
 @login_required
