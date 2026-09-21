@@ -198,8 +198,8 @@ def add_paper():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
             pdf_path=filename
 
-        db.execute("INSERT INTO papers (user_id, title, authors, year, status, tldr, tags, pdf_path) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", session["user_id"], title, authors, year, status, tldr, tags, pdf_path)
-        paper_id=db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
+        result = db.execute("INSERT INTO papers (user_id, title, authors, year, status, tldr, tags, pdf_path) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id", session["user_id"], title, authors, year, status, tldr, tags, pdf_path)
+        paper_id = result[0]["id"]
         if tags:
            tag_list=[t.strip() for t in tags.split(",") if t.strip()]
            for tag_name in tag_list:
