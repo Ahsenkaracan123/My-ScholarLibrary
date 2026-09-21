@@ -263,7 +263,7 @@ def edit_paper(paper_id):
         db.execute("UPDATE papers SET title=%s,authors=%s,year=%s WHERE id=%s AND user_id=%s",title,authors,year,paper_id,session["user_id"])
         return redirect("/dashboard")
     else:
-        papers=db.execute("SELECT * FROM papers WHERE id=? AND user_id=%s",paper_id,session["user_id"])
+        papers=db.execute("SELECT * FROM papers WHERE id=%s AND user_id=%s",paper_id,session["user_id"])
         if not papers:
             return redirect("/dashboard")
         return render_template("edit_paper.html",paper=papers[0])
