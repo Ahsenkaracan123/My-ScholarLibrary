@@ -129,3 +129,8 @@ errors and suggest UI
 improvements. I also used Google Gemini for  at a couple of
 points during development. All code was written, tested, and understood by
 me personally, in line with CS50's policy on AI-assisted final projects.
+
+## License
+
+© 2026 Ahsen Karacan. All rights reserved.
+This project was created as a final project for Harvard's CS50: Introduction to Computer Science.
