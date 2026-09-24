@@ -16,7 +16,7 @@ def login_required(f):
         return f(*args,**kwargs)
     return decorated_function
 app=Flask(__name__)
-app.secret_key=os.getenv("SECRET_KEY","cs50-scholarlibrary-secret-key")
+app.secret_key=os.getenv("SECRET_KEY","local-dev-placeholder")
 app.config['MAX_CONTENT_LENGTH']=16*1024*1024
 UPLOAD_FOLDER='uploads'
 os.makedirs(UPLOAD_FOLDER,exist_ok=True)
@@ -229,28 +229,38 @@ def view_paper(paper_id):
 @app.route("/delete_note/<int:note_id>",methods=["POST"])
 @login_required
 def delete_note(note_id):
-    note=db.execute("SELECT paper_id FROM notes WHERE id=%s",note_id)
+    note = db.execute("""SELECT notes.paper_id FROM notes
+                          JOIN papers ON notes.paper_id = papers.id
+                          WHERE notes.id=%s AND papers.user_id=%s""",
+                          note_id, session["user_id"])
     if note:
-        paper_id=note[0]["paper_id"]
-        db.execute("DELETE FROM notes WHERE id=%s",note_id)
+        paper_id = note[0]["paper_id"]
+        db.execute("DELETE FROM notes WHERE id=%s", note_id)
         return redirect(f"/view_paper/{paper_id}")
     return redirect("/dashboard")
 @app.route("/edit_note/<int:note_id>",methods=["POST"])
 @login_required
 def edit_note(note_id):
-    new_content=request.form.get("note_content")
-    note=db.execute("SELECT paper_id FROM notes WHERE id=%s",note_id)
+    new_content = request.form.get("note_content")
+    note = db.execute("""SELECT notes.paper_id FROM notes
+                          JOIN papers ON notes.paper_id = papers.id
+                          WHERE notes.id=%s AND papers.user_id=%s""",
+                          note_id, session["user_id"])
     if note and new_content:
-        paper_id=note[0]["paper_id"]
-        db.execute("UPDATE notes SET content=%s WHERE id=%s",new_content,note_id)
+        paper_id = note[0]["paper_id"]
+        db.execute("UPDATE notes SET content=%s WHERE id=%s", new_content, note_id)
         return redirect(f"/view_paper/{paper_id}")
     return redirect("/dashboard")
 @app.route("/delete_paper/<int:paper_id>",methods=["POST"])
 @login_required
 def delete_paper(paper_id):
-    db.execute("DELETE FROM paper_tags WHERE paper_id=%s",paper_id)
-    db.execute("DELETE FROM notes WHERE paper_id=%s",paper_id)
-    db.execute("DELETE FROM papers WHERE id=%s AND user_id=%s",paper_id,session["user_id"])
+    paper = db.execute("SELECT id FROM papers WHERE id=%s AND user_id=%s",
+                        paper_id, session["user_id"])
+    if not paper:
+        return redirect("/dashboard")
+    db.execute("DELETE FROM paper_tags WHERE paper_id=%s", paper_id)
+    db.execute("DELETE FROM notes WHERE paper_id=%s", paper_id)
+    db.execute("DELETE FROM papers WHERE id=%s AND user_id=%s", paper_id, session["user_id"])
     return redirect("/dashboard")
 @app.route("/edit_paper/<int:paper_id>",methods=["GET","POST"])
 @login_required
